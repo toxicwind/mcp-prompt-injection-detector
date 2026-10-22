@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# mcp-prompt-injection-detector — self-test gate (PASS/FAIL).
+# Validates repo + data integrity: required notebooks present, augmentation data
+# are well-formed JSON. Honest gate for a Jupyter-workflow repo with no compiled entry.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "== mcp-prompt-injection-detector check: start =="
+command -v python3 >/dev/null 2>&1 || { echo "FAIL: python3 not found"; exit 1; }
+
+for n in mcp_prompt_injection_prevention.ipynb mcp_server_only.ipynb mcp-security-gateway.html; do
+  [ -f "$n" ] || { echo "FAIL: missing $n"; exit 1; }
+done
+
+echo "-- augmentation data integrity --"
+for f in McpPromptInjectionEvaluation/augmentation_data/*.json; do
+  python3 - "$f" <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1], encoding="utf-8"))
+print(f"OK  {sys.argv[1]}  ({len(data)} items)")
+PY
+done
+
+echo "-- notebook parse sanity --"
+python3 - <<'PY'
+import json, glob
+for nb in glob.glob("*.ipynb"):
+    d = json.load(open(nb, encoding="utf-8"))
+    assert d.get("nbformat") in (4, 5), f"{nb}: bad nbformat {d.get('nbformat')}"
+    print(f"OK  {nb}  nbformat={d.get('nbformat')} cells={len(d.get('cells', []))}")
+PY
+
+echo "== mcp-prompt-injection-detector check: PASS =="

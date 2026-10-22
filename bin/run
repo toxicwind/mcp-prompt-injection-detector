@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# mcp-prompt-injection-detector — entry pointer.
+# Primary deployable is the FastAPI MCP security gateway served from
+# mcp_server_only.ipynb (standalone server cell). The detector workflow runs in
+# mcp_prompt_injection_prevention.ipynb. bin/run documents the deploy path;
+# use bin/check to validate repo + data integrity.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+cat <<'EOF'
+This detector is a Jupyter-workflow repo (academic submission). To deploy the MCP
+security gateway, execute the server cell of mcp_server_only.ipynb (FastAPI server).
+
+A build-free server is not shipped as a source entry point; the standalone FastAPI
+deployment notebook is the server. Run `bin/check` to validate data + notebook integrity.
+EOF
